@@ -17,33 +17,29 @@ public class ReservationController {
     private ReservationService reservationService;
 
     @PostMapping
-    public ResponseEntity<ReservationResponseDto> createReservation(@RequestHeader("Authorization") String token,
-                                                                    @RequestBody ReservationRequestDto requestDto) {
-        return ResponseEntity.ok(reservationService.createReservation(requestDto, token));
+    public ResponseEntity<ReservationResponseDto> createReservation(@RequestBody ReservationRequestDto requestDto) {
+        return ResponseEntity.ok(reservationService.createReservation(requestDto));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ReservationResponseDto> getReservationById(@RequestHeader("Authorization") String token,
-                                                                     @PathVariable Long id) {
-        return ResponseEntity.ok(reservationService.getReservationById(id, token));
+    public ResponseEntity<ReservationResponseDto> getReservationById(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.getReservationById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<ReservationResponseDto>> getAllReservations(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(reservationService.getAllReservations(token));
+    public ResponseEntity<List<ReservationResponseDto>> getAllReservations() {
+        return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReservationResponseDto> updateReservation(@RequestHeader("Authorization") String token,
-                                                                    @PathVariable Long id,
+    public ResponseEntity<ReservationResponseDto> updateReservation(@PathVariable Long id,
                                                                     @RequestBody ReservationRequestDto requestDto) {
-        return ResponseEntity.ok(reservationService.updateReservation(id, requestDto, token));
+        return ResponseEntity.ok(reservationService.updateReservation(id, requestDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteReservation(@RequestHeader("Authorization") String token,
-                                                    @PathVariable Long id) {
-        reservationService.deleteReservation(id, token);
+    public ResponseEntity<String> deleteReservation(@PathVariable Long id) {
+        reservationService.deleteReservation(id);
         return ResponseEntity.ok("Reservation deleted successfully");
     }
 }

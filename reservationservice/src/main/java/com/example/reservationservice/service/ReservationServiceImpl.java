@@ -1,6 +1,5 @@
 package com.example.reservationservice.service;
 
-import com.example.reservationservice.config.JwtUtil;
 import com.example.reservationservice.dto.ReservationRequestDto;
 import com.example.reservationservice.dto.ReservationResponseDto;
 import com.example.reservationservice.dto.RoomPriceResponseDto;
@@ -8,10 +7,11 @@ import com.example.reservationservice.entity.Bill;
 import com.example.reservationservice.entity.Guest;
 import com.example.reservationservice.entity.Reservation;
 import com.example.reservationservice.exception.ResourceNotFoundException;
-import com.example.reservationservice.exception.UnauthorizedAccessException;
 import com.example.reservationservice.feign.RoomFeignClient;
 import com.example.reservationservice.producer.EmailProducer;
 import com.example.reservationservice.repository.ReservationRepository;
+
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,27 +35,9 @@ public class ReservationServiceImpl implements ReservationService {
     @Autowired
     private EmailProducer emailProducer;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    private void validateOwnerOrReceptionist(String token) {
-        String role = jwtUtil.extractRole(token);
-        if (!(role.equalsIgnoreCase("OWNER") || role.equalsIgnoreCase("RECEPTIONIST"))) {
-            throw new UnauthorizedAccessException("You are not allowed to perform this operation.");
-        }
-    }
-
-    private void validateOwner(String token) {
-        String role = jwtUtil.extractRole(token);
-        if (!role.equalsIgnoreCase("OWNER")) {
-            throw new UnauthorizedAccessException("Only Owner can perform this operation.");
-        }
-    }
-
 //    @Transactional
     @Override
-    public ReservationResponseDto createReservation(ReservationRequestDto requestDto, String token) {
-        validateOwnerOrReceptionist(token);
+    public ReservationResponseDto createReservation(ReservationRequestDto requestDto) {
 
         // Fetch Room Prices
         RoomPriceResponseDto prices = roomFeignClient.getRoomPricesByRoomNumber(requestDto.getRoomNumber());
@@ -106,16 +88,14 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public ReservationResponseDto getReservationById(Long id, String token) {
-        validateOwnerOrReceptionist(token);
+    public ReservationResponseDto getReservationById(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
         return mapToResponse(reservation);
     }
 
     @Override
-    public List<ReservationResponseDto> getAllReservations(String token) {
-        validateOwner(token);
+    public List<ReservationResponseDto> getAllReservations() {
         List<Reservation> reservations = reservationRepository.findAll();
         return reservations.stream()
                 .map(this::mapToResponse)
@@ -123,16 +103,14 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void deleteReservation(Long id, String token) {
-        validateOwner(token);
+    public void deleteReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
         reservationRepository.delete(reservation);
     }
 
     @Override
-    public ReservationResponseDto updateReservation(Long id, ReservationRequestDto requestDto, String token) {
-        validateOwnerOrReceptionist(token);
+    public ReservationResponseDto updateReservation(Long id, ReservationRequestDto requestDto) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
 

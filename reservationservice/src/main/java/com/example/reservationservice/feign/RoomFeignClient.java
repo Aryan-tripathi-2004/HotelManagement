@@ -5,7 +5,7 @@ import com.example.reservationservice.dto.RoomPriceResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "room-service")
+@FeignClient(name = "ROOM-SERVICE")
 public interface RoomFeignClient {
 
     @PostMapping("/api/rooms/{roomId}/add-reservation")

@@ -1,14 +1,13 @@
-package com.example.roomservice;
+package com.example.authService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-
-public class RoomserviceApplication {
+public class authServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RoomserviceApplication.class, args);
+		SpringApplication.run(authServiceApplication.class, args);
 	}
 
 }

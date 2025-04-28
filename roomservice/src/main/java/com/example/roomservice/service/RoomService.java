@@ -8,11 +8,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface RoomService {
-    RoomResponseDto createRoom(RoomRequestDto roomRequestDto, String token);
-    RoomResponseDto updateRoom(Long id, RoomRequestDto roomRequestDto, String token);
-    void deleteRoom(Long id, String token);
-    List<RoomResponseDto> getAllRooms(String token);
-    RoomResponseDto getRoomById(Long id, String token);
+    RoomResponseDto createRoom(RoomRequestDto roomRequestDto);
+    RoomResponseDto updateRoom(Long id, RoomRequestDto roomRequestDto);
+    void deleteRoom(Long id);
+    List<RoomResponseDto> getAllRooms();
+    RoomResponseDto getRoomById(Long id);
     void addReservationToRoom(Long roomId, ReservationInputDto reservationInputDto);
     List<RoomResponseDto> getAvailableRoomsByDate(LocalDate date);
 }

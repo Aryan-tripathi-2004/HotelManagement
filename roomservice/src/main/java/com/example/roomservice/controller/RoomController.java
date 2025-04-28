@@ -20,34 +20,30 @@ public class RoomController {
     private RoomService roomService;
 
     @PostMapping
-    public ResponseEntity<RoomResponseDto> createRoom(@RequestHeader("Authorization") String token,
-                                                      @RequestBody RoomRequestDto roomRequestDto) {
-        return ResponseEntity.ok(roomService.createRoom(roomRequestDto, token));
+    public ResponseEntity<RoomResponseDto> createRoom(@RequestBody RoomRequestDto roomRequestDto) {
+        return ResponseEntity.ok(roomService.createRoom(roomRequestDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoomResponseDto> updateRoom(@RequestHeader("Authorization") String token,
-                                                      @PathVariable Long id,
+    public ResponseEntity<RoomResponseDto> updateRoom(@PathVariable Long id,
                                                       @RequestBody RoomRequestDto roomRequestDto) {
-        return ResponseEntity.ok(roomService.updateRoom(id, roomRequestDto, token));
+        return ResponseEntity.ok(roomService.updateRoom(id, roomRequestDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoom(@RequestHeader("Authorization") String token,
-                                           @PathVariable Long id) {
-        roomService.deleteRoom(id, token);
+    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomResponseDto>> getAllRooms(@RequestHeader("Authorization") String token) {
-        return ResponseEntity.ok(roomService.getAllRooms(token));
+    public ResponseEntity<List<RoomResponseDto>> getAllRooms() {
+        return ResponseEntity.ok(roomService.getAllRooms());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoomResponseDto> getRoomById(@RequestHeader("Authorization") String token,
-                                                       @PathVariable Long id) {
-        return ResponseEntity.ok(roomService.getRoomById(id, token));
+    public ResponseEntity<RoomResponseDto> getRoomById(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.getRoomById(id));
     }
 
     @PostMapping("/{roomId}/add-reservation")
@@ -58,8 +54,7 @@ public class RoomController {
     }
 
     @PostMapping("/available")
-    public ResponseEntity<List<RoomResponseDto>> getAvailableRooms(@RequestHeader("Authorization") String token,
-                                                                   @RequestBody Map<String, String> request) {
+    public ResponseEntity<List<RoomResponseDto>> getAvailableRooms(@RequestBody Map<String, String> request) {
         LocalDate date = LocalDate.parse(request.get("date"));
         return ResponseEntity.ok(roomService.getAvailableRoomsByDate(date));
     }
