@@ -1,0 +1,127 @@
+package com.example.roomservice.service;
+
+import com.example.roomservice.config.JwtUtil;
+import com.example.roomservice.dto.ReservationInputDto;
+import com.example.roomservice.dto.RoomRequestDto;
+import com.example.roomservice.dto.RoomResponseDto;
+import com.example.roomservice.entity.Reservation;
+import com.example.roomservice.entity.Room;
+import com.example.roomservice.exception.ResourceNotFoundException;
+import com.example.roomservice.exception.UnauthorizedAccessException;
+import com.example.roomservice.repository.RoomRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class RoomServiceImpl implements RoomService {
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private void validateOwnerOrManager(String token) {
+        String role = jwtUtil.extractRole(token);
+        if (!(role.equalsIgnoreCase("OWNER") || role.equalsIgnoreCase("MANAGER"))) {
+            throw new UnauthorizedAccessException("You are not allowed to perform this operation.");
+        }
+    }
+
+    private void validateAnyUser(String token) {
+        jwtUtil.extractRole(token);
+    }
+
+    @Override
+    public RoomResponseDto createRoom(RoomRequestDto roomRequestDto, String token) {
+        validateOwnerOrManager(token);
+        Room room = modelMapper.map(roomRequestDto, Room.class);
+        Room savedRoom = roomRepository.save(room);
+        return modelMapper.map(savedRoom, RoomResponseDto.class);
+    }
+
+    @Override
+    public RoomResponseDto updateRoom(Long id, RoomRequestDto roomRequestDto, String token) {
+        validateOwnerOrManager(token);
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id " + id));
+
+        room.setRoomNumber(roomRequestDto.getRoomNumber());
+        room.setRoomType(roomRequestDto.getRoomType());
+        room.setBasicPrice(roomRequestDto.getBasicPrice());
+        room.setFirstNightPrice(roomRequestDto.getFirstNightPrice());
+        room.setCapacity(roomRequestDto.getCapacity());
+
+        Room updatedRoom = roomRepository.save(room);
+        return modelMapper.map(updatedRoom, RoomResponseDto.class);
+    }
+
+    @Override
+    public void deleteRoom(Long id, String token) {
+        validateOwnerOrManager(token);
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id " + id));
+        roomRepository.delete(room);
+    }
+
+    @Override
+    public List<RoomResponseDto> getAllRooms(String token) {
+        validateOwnerOrManager(token);
+        List<Room> rooms = roomRepository.findAll();
+        return rooms.stream()
+                .map(room -> modelMapper.map(room, RoomResponseDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public RoomResponseDto getRoomById(Long id, String token) {
+        validateOwnerOrManager(token);
+        Room room = roomRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id " + id));
+        return modelMapper.map(room, RoomResponseDto.class);
+    }
+
+    @Override
+    public void addReservationToRoom(Long roomId, ReservationInputDto reservationInputDto) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id " + roomId));
+
+        Reservation newReservation = Reservation.builder()
+                .checkInDate(reservationInputDto.getCheckInDate())
+                .checkOutDate(reservationInputDto.getCheckOutDate())
+                .build();
+
+        room.getReservations().add(newReservation);
+        roomRepository.save(room);
+    }
+
+    @Override
+    public List<RoomResponseDto> getAvailableRoomsByDate(LocalDate date) {
+        List<Room> rooms = roomRepository.findAll();
+        List<Room> availableRooms = new ArrayList<>();
+
+        for (Room room : rooms) {
+            boolean isAvailable = room.getReservations().stream()
+                    .noneMatch(reservation ->
+                            !(date.isBefore(reservation.getCheckInDate()) || date.isAfter(reservation.getCheckOutDate()))
+                    );
+            if (isAvailable) {
+                availableRooms.add(room);
+            }
+        }
+
+        return availableRooms.stream()
+                .map(room -> modelMapper.map(room, RoomResponseDto.class))
+                .collect(Collectors.toList());
+    }
+
+}
